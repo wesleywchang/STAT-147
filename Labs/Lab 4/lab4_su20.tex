@@ -1,0 +1,989 @@
+%\input{/home/lpenas/formats/format3m.tma}
+\thispagestyle{empty}
+\documentclass{article}
+
+% Set style parameters
+
+
+\setlength{\oddsidemargin}{-0.30in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\textwidth}{7.0in}
+\setlength{\topmargin}{0pt}
+\setlength{\headsep}{0.0in}
+\setlength{\textheight}{8.80in}
+\input setbmp
+\brokenpenalty=10000
+
+% Some common LaTeX packages 
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{xcolor}
+
+\mathversion{bold}
+\parskip=10pt
+%\input{/home/lpenas/formats/format3m.tma}
+\parindent=0pt
+
+\parskip=10pt
+\input setbmp
+\newtheorem{example1}{Example}[section]
+
+\newenvironment{example}{\begin{example1} \em}{\end{example1}} % defines example environment
+
+\parindent=0pt
+\begin{document}
+
+\begin{center}
+{\Large\bf Statistics 147 LAB \#4} \\
+{\large\bf 10 pts; Summer 2020}
+\end{center}
+
+\begin{tabular}{llll}
+{\large\bf NAME:} & \underline{\bf \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+ & 
+{\bf ID: (last 4 \#s only)} & \underline{\bf \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ } \\
+& \\
+%{\bf Section:} & \underline{\bf \ \ \ \ 001 \ or \ 002 \ (Circle your choice)}
+\end{tabular}
+
+
+This lab is designed to give the student practice generating confidence intervals and performing tests of hypothesis 
+ for a single population mean.   
+
+{\bf REMINDER:} You reject $H_0$ if p-value $< \ \mbox{specified of } \ \alpha$. We'll use $\alpha = 0.05$.
+
+
+\section*{SAS}
+
+{\bf Data File:} You will need the data file {\bf plant.dat} from Blackboard (under Data Files). You should have downloaded this file 
+for Lab \#3.
+
+{\bf Note:} The data starts on Line 2.
+
+
+
+Four chemical plants, producing the same product and owned by the same 
+company, discharge effluent into streams in the vicinity of their locations. 
+To check the extent of the pollution created by the effluents and to 
+determine whether the amount of polluting effluents varies from plant to 
+plant, the company collected random samples of liquid waste from each of the 
+four plants. The data, in pounds per gallon of waste, is given in the table 
+below.
+
+\footnotesize
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{PlantA} & \textbf{PlantB} & \textbf{PlantC} & \textbf{PlantD} \\
+\hline
+1.65  & 1.70  & 1.40  & 1.58 \\
+\hline
+1.72  & 1.85  & 1.75  & 1.77 \\
+\hline
+1.50  & 1.36  & 1.58  & 1.48 \\
+\hline
+1.37  & 2.05  & 1.65  & 1.69 \\
+\hline
+1.60  & 1.80  & 1.55  & 1.65 \\
+\hline
+1.40  & 2.10  & 1.45  & 1.65 \\
+\hline
+1.75  & 1.95  & 1.66  & 1.79 \\
+\hline
+1.38  & 1.65  & 1.70  & 1.58 \\
+\hline
+1.65  & 1.80  & 1.85  & 1.77 \\
+\hline
+1.55  & 2.00  & 1.24  & 1.60 \\
+\hline
+\end{tabular}
+\end{center}
+
+\normalsize
+Let Plant A be sample 1, Plant B be sample 2,  Plant C be sample 3, and Plant D be sample 4. 
+
+\begin{enumerate}
+\item In SAS, one can use {\bf proc means} to generate the information for generating confidence intervals   and performing a test of hypothesis for  a  single population mean. {\bf Proc means} tests whether a population mean is 0. Thus, one must first transform the data so that it is centered about 0. This can be accomplished by creating a new variable that is the old data minus that hypothesized mean. One can also use {\bf proc univariate} to test a single mean by specifying the value in the {\bf proc univariate} statement.
+
+
+\subitem (i) Invoke SAS and use {\bf proc means}  to generate the appropriate information to test whether the mean discharge effluent for {\bf Plant B} is 1.75 pounds/gallon.  Recall, in Lab \#3, you read in the data. So open your SAS program file
+(lab3su20.sas) and make the following changes/additions.
+ (Add titles and then look for 2 rows of * for the new code.)
+
+
+{\bf NOTE: DO NOT TYPE THE PROGRAM IN AGAIN, JUST MODIFY YOUR EXISTING CODE AND SAVE IT AS lab4su20s.sas.}
+
+{\bf NOTE:} Delete the code associated with {\em data looptry}.
+
+%\begin{center}
+%{\bf Please go to the next page!}
+%\end{center}
+%\vfill\eject
+\begin{verbatim}
+/* Set up format of the output */
+options nocenter ps = 55 nocenter ls = 78 nodate nonumber formdlim='*';
+ /* ls = linesize,  ps = pagesize   
+           nocenter      justifies the output so it is not centered on the page
+           nodate        suppresses printing of today's date on each page of output
+           nonumber      suppresses printing of page number on each page of output
+           formdlim      overrides the internal page breaks and replaces them 
+                            with the designated symbol*/
+/* Use DM to clear all windows except the editor window */
+DM log "odsresults; clear; out; clear; log; clear;";
+ods graphics off;
+
+title1 'Statistics 147 Lab #4, Summer 2020';
+title2 'Your name goes here';
+title3 'Question 1';
+   
+/* Create temporary SAS dataset named lab3su20 */
+
+data lab3su20;   
+    /* Open data file plant.dat. Be sure to specify the path indicating where
+       you have saved the data file.  The actual data starts on Line 2.*/
+    infile 'c:\Luke\summer2020\su20147\datafiles\plant.dat' firstobs = 2;
+
+    /* Create nested do loops to read in the data
+       NOTE: There are 10 rows and four columns of data
+    First, Do loop for the rows*/
+    do row = 1 to 10;
+        /* Do Loop for the columns */
+        do plant = 1 to 4;
+            /* Use If-Then-Else Structure to name the plants */
+            if      plant = 1 then name = 'Plant A';
+            else if plant = 2 then name = 'Plant B';
+            else if plant = 3 then name = 'Plant C';
+            else                   name = 'Plant D';
+            
+            /* Input response (data values) */
+            input dischrg @@;
+            /* Output the data */
+            output;
+        /* Close the Do loop for columns */
+        end;
+    /* Close the Do loop for rows */    
+    end;
+run;
+
+/* Print the results */
+proc print noobs data = lab3su20;
+    title4 'Part (i) Read in and Print data';
+run;
+
+/* First sort the data according to the variable plant */
+proc sort data = lab3su20;
+   by plant;
+run;
+
+/* Print the results */
+proc print noobs data = lab3su20;
+    title4 'Print to check sorted';
+run;
+
+/* Use proc means to generate the mean and variance for each plant
+    n              number of observations
+    mean           sample mean
+    var            sample variance
+    by plant       group the data according to the plant from which the observation 
+                   was selected
+    var discharge  generate mean and variance of the variable dischrg (for each plant) */
+    
+proc means n mean var data = lab3su20;
+   title4 'Part (ii): Descriptive Statistics';
+   by plant;
+   var dischrg;
+run;
+
+
+/* Create new temporary SAS dataset which only contains the 
+   observations from Plant B */
+data onlyB;
+    /* Use set command to bring in all the data */
+    set lab3su20;
+    
+    /* Use if statement to restrict the data to Plant B, i.e., Plant 2*/
+
+    if plant = 2;    /* Could also use: if name = 'Plant B'; */
+run;
+
+/* **************************************************** */
+/* **************************************************** */
+/*               NEW CODE BEGINS HERE                   */
+
+    /*  Create new variable representing the transformed data 
+        new_data = (original variable) - (mean value to test) */
+    new_data = dischrg - 1.75;
+    
+/* Use proc means to generate information for testing mean
+   of new_data = 0
+       n       number of observations
+       mean    sample mean
+       t       t-test statistic
+       probt   p-value for two-sided test */
+       
+proc means n mean t probt data = onlyB;
+   title4 'Part (i) Testing new_data mean = 0 using proc means';
+   var new_data;
+run;
+/*          END OF NEW CODE                  */
+/* *************************************************** */
+/* *************************************************** */
+proc print noobs data = onlyB;
+proc means n mean stddev;
+    var dischrg;
+run;
+
+/* Create new SAS dataset which only contains the 
+   observations from Plants A and  B */
+data bothAB;
+    /* Use set command to bring in all the data */
+    set lab3su20;
+    
+    /* Modify title4 */
+    title4 'Part (iv): Plant A and Plant B with Descriptive Statistics ';
+
+    /* Use if statement to restrict the data to Plants A and  B, i.e., Plants 1 and 2 */
+
+    if plant = 1 or plant = 2;
+    /* Could also use: if name = 'Plant A' or name = 'Plant B'; */
+
+
+proc print data = bothAB;
+    title4 'Print bothAB.  Make sure sorted by the variable PLANT';
+run;
+
+/* Use proc means to generate some descriptive statistics.
+   Use the by statement to generate statistics for each plant. */
+proc means n mean stddev data = bothAB;
+   by plant;
+   var dischrg;
+run;
+
+quit;
+\end{verbatim}
+{\bf Reminder:} Save your SAS file as {\bf lab4su20.sas}. Execute the program
+ and 
+complete the following:
+
+% \vfill\eject
+\begin{verbatim}
+Statistics 147 Lab #4, Summer 2020
+Your name goes here
+Question 1
+Part (i) Testing new-data mean = 0 using proc means
+
+The MEANS Procedure
+
+      Analysis Variable : new_data
+
+ N            Mean    t Value      Pr > |t|
+-----------------------------------------------
+
+_____    _________    ________    ________
+-----------------------------------------------
+\end{verbatim}
+
+\begin{itemize}
+  \item[$\spadesuit$] 
+$H_0:$ \underline{ \ \ \ $\mu_B = 1.75$ \ \ \ }
+
+ \item[$\spadesuit$]   $H_a:$ \underline{ \ \ \ $\mu_B \neq 1.75$ \ \ \ }
+
+
+ \item[$\spadesuit$]  
+The p-value is \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+ \ \ }.
+
+ \item[$\spadesuit$] RR: Reject $H_0$ if p-value $< \alpha = 0.05$
+
+ \item[$\spadesuit$]   What is your conclusion? (Be sure to justify your answer!)
+
+\baselineskip=24pt
+{\bf Conclusion:} Since the p-value = {\bf \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }} is (less than, greater than) [circle your choice] $\alpha = 0.05$,  \\ (reject, do not reject) [circle your choice] $H_0 \rightarrow$ it (is, is not) [circle your choice] reasonable to assume the  true mean discharge effluent  for Plant B is significantly
+different from 1.75 pounds/gallon.
+
+
+\vspace*{0.1in}
+
+\baselineskip=12pt
+%\vfill\eject
+\end{itemize}
+\subitem (ii) One can also use {\bf proc univariate}: We need to include a value of $\mu_0$ to test in the {\bf proc univariate} statement. We can do this using {\bf mu0} as follows:
+
+
+\begin{verbatim}
+/* Use proc univariate to test mu0 value
+   Use ods select TestsForLocation to suppress printing of
+   all output except the tests for location */
+proc univariate mu0 = 1.75 data = onlyB;
+     ods select TestsForLocation;
+     title4 'Part (ii) Using proc univariate to test mean = 1.75 vs mean not= 1.75';
+     var dischrg;
+\end{verbatim}
+
+Add the above lines of code, {\bf right after} the following block of code
+\begin{verbatim}
+proc means n mean t probt data = onlyB;
+     title4 'Part (ii) Testing new-data mean = 0 using proc means';
+     var new_data;
+\end{verbatim}
+ in your program. 
+
+Save and execute your program. Complete the following:
+
+
+\large
+\begin{verbatim}
+Statistics 147 Lab #4, Summer 2020
+Your name goes here
+Question 1
+Part (ii) Using proc univariate to test mean = 1.75 vs mean not= 1.75
+
+          Tests for Location: Mu0=1.75
+Test           -Statistic-    -----p Value------
+
+Student's t    t  _________   Pr > |t|    __________
+Sign           M         2    Pr >= |M|   0.3438
+Signed Rank    S        11    Pr >= |S|   0.2852
+\end{verbatim}
+\normalsize
+
+\subitem (iii) One can also use {\bf proc ttest}: We need to include a value of $H_0$ to test in the {\bf proc ttest} statement. 
+
+We can do this using {\bf h0} as follows:
+
+\begin{verbatim}
+/* Use proc ttest to test single mean; specify value to test: h0 = value_to_test */
+proc ttest h0 = 1.75 data = onlyB;
+   title4 'Part (iii) Using proc ttest to test mean = 1.75 vs mean not= 1.75';
+   var dischrg;
+run;
+\end{verbatim}
+
+
+Add the above lines of code, {\bf right after} the following block of code
+\begin{verbatim}
+/* Use proc univariate to test mu0 value
+   Use ods select TestsForLocation to suppress printing of
+   all output except the tests for location */
+
+proc univariate mu0 = 1.75 data = onlyB;
+    /*Be sure to include the 'S' in TestSForLocation */
+    ods select TestsForLocation;
+    title4 'Part (ii) Using proc univariate to test mean = 1.75 vs mean not= 1.75';
+    var dischrg;
+run;
+\end{verbatim}
+ in your program. 
+
+Save and execute your program. Complete the following:
+
+
+\large
+\begin{verbatim}
+Statistics 147 Lab #4, Summer 2020
+Your name goes here
+Question 1
+Part (iii) Using proc ttest to test mean = 1.75 vs mean not= 1.75
+
+The TTEST Procedure
+Variable:  dischrg
+
+  N        Mean     Std Dev     Std Err     Minimum     Maximum
+ 10      1.8260      0.2203      0.0697      1.3600      2.1000
+
+    Mean       95% CL Mean        Std Dev      95% CL Std Dev
+  1.8260      1.6684   1.9836      0.2203      0.1515   0.4022
+
+    DF    t Value    Pr > |t|
+
+     9       1.09     _______
+\end{verbatim}
+
+\normalsize
+
+\subitem (iv) When using {\bf proc ttest}, one can specify a one-sided alternative by using the {\bf sides} option. Use {\bf proc ttest} and the {\bf sides} option to generate the appropriate information to test whether the mean discharge effluent for {\bf Plant B} is greater than 1.75 pounds/gallon.
+
+We can do this  as follows:
+\begin{verbatim}
+/* Use proc ttest to test single mean; specify value to test: h0 = value_to_test
+   Use sides = upper to generate test for mu_B > 1.75 */
+proc ttest h0 = 1.75 sides = upper data = onlyB;
+   title4 'Part (iv) Using proc ttest to test Ho: mean = 1.75 vs Ha: mean > 1.75';
+   var dischrg;
+run;
+\end{verbatim}
+
+Add the above lines of code, {\bf right after} the following block of code
+\begin{verbatim}
+/* Use proc ttest to test single mean; specify value to test: h0 = value_to_test */
+proc ttest h0 = 1.75 data = onlyB;
+   title4 'Part (iii) Using proc ttest to test mean = 1.75 vs mean not= 1.75';
+   var dischrg;
+run;
+\end{verbatim}
+
+
+Complete the following.
+\begin{verbatim}
+Statistics 147 Lab #4, Summer 2020
+Your name goes here
+Question 1
+Part (iv) Using proc ttest to test mean = 1.75 vs mean > 1.75
+
+The TTEST Procedure
+Variable:  dischrg
+  N        Mean     Std Dev     Std Err     Minimum     Maximum
+ 10      1.8260      0.2203      0.0697      1.3600      2.1000
+
+    Mean       95% CL Mean        Std Dev      95% CL Std Dev
+  1.8260      1.6983  Infty        0.2203      0.1515   0.4022
+
+    DF    t Value    Pr > t
+
+     9       1.09   _________
+\end{verbatim}
+\normalsize
+
+\begin{itemize}
+  \item[$\spadesuit$] 
+$H_0:$ \underline{ \ \ \ $\mu_B = 1.75$ \ \ \ }
+
+ \item[$\spadesuit$]   $H_a:$ \underline{ \ \ \ $\mu_B >1.75$ \ \ \ }
+
+
+ \item[$\spadesuit$]  
+The p-value is \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+ \ \ }.
+
+ \item[$\spadesuit$] RR: Reject $H_0$ if p-value $< \alpha = 0.05$
+
+ \item[$\spadesuit$]   What is your conclusion? (Be sure to justify your answer!)
+
+\baselineskip=24pt
+{\bf Conclusion:} Since the p-value = {\bf \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }} is (less than, greater than) [circle your choice] $\alpha = 0.05$,  \\ (reject, do not reject) [circle your choice] $H_0 \rightarrow$ it (is, is not) [circle your choice] reasonable to assume the  true mean discharge effluent  for Plant B is significantly
+larger than 1.75 pounds/gallon.
+
+\end{itemize}
+\vspace*{0.1in}
+
+\baselineskip=12pt
+
+\subitem (v) Using {\bf proc means}, generate a {\bf 99\%} confidence interval for the true mean discharge for Plant B (i.e.,plant 2).
+
+We can do this as follows:
+
+\begin{verbatim}
+/* Use proc means to generate confidence interval
+   Specify value of alpha to use: 99% -> alpha = 0.01 */
+proc means n mean stddev clm alpha = 0.01 data = onlyB;
+   title4 'Part (v) 99% CI using proc means';
+   var dischrg;
+run
+\end{verbatim}
+
+Add the above lines of code, {\bf right after} the following block of code:
+\begin{verbatim}
+/* Use proc ttest to test single mean; specify value to test: h0 = value_to_test
+   Use sides = upper to generate test for mu_B > 1.75 */
+proc ttest h0 = 1.75 sides = upper data = onlyB;
+   title4 'Part (iv) Using proc ttest to test mean = 1.75 vs mean > 1.75';
+   var dischrg;
+run;
+\end{verbatim}
+
+
+Complete the following:
+\large
+\begin{verbatim}
+Statistics 147 Lab #4, Summer 2020
+Your name goes here
+Question 1
+Part (v) 99% CI using proc means
+
+The MEANS Procedure
+
+                   Analysis Variable : dischrg
+
+                                         Lower 99%       Upper 99%
+ N            Mean         Std Dev     CL for Mean     CL for Mean
+
+____   ____________   _____________    ____________    ___________
+\end{verbatim}
+
+\normalsize
+\vspace*{0.2in}
+
+{\bf Confidence Intervals {\em Limits}: \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }}
+
+{\bf Interpretation:}
+\vspace*{0.8in}
+
+%\vfill\eject
+\subitem (vi) Using {\bf proc ttest}, generate a {\bf 99\%} confidence interval for the true mean discharge for Plant B (i.e.,plant2).
+
+We can do this as follows:
+
+\begin{verbatim}
+/* Use proc ttest to generate confidence interval
+Specify the value of alpha to use: -> alpha = 0.01 */
+proc ttest alpha = 0.01 data = onlyB;
+    title4 'Part (vi) 99% CI using proc ttest';
+	var dischrg;
+run;
+\end{verbatim}
+\vspace*{0.1in}
+
+Add the above lines of code, {\bf right after} the following block of code:
+\begin{verbatim}
+/* Use proc means to generate confidence interval
+   Specify value of alpha to use: 99% -> alpha = 0.01 */
+proc means n mean stddev clm alpha = 0.01 data = onlyB;
+   title4 'Part (v) 99% CI using proc means';
+   var dischrg;
+run;
+\end{verbatim}
+
+Complete the following:
+
+\large
+\begin{verbatim}
+Statistics 147 Lab #4, Summer 2020
+Your name goes here
+Question 1
+Part (vi) 99% CI using proc ttest
+The TTEST Procedure
+
+Variable:  dischrg
+  N        Mean     Std Dev     Std Err     Minimum     Maximum
+ 10      1.8260      0.2203      0.0697      1.3600      2.1000
+
+    Mean          99% CL Mean        Std Dev      99% CL Std Dev
+
+  1.8260      _______  _______      0.2203      0.1361   0.5018
+
+    DF    t Value    Pr > |t|
+     9      26.21      <.0001
+\end{verbatim}
+\normalsize
+%\vfill\eject
+\end{enumerate}
+\vspace*{0.1in}
+
+
+{\bf Exit SAS}
+
+\section*{R}
+
+Invoke R and complete the following.
+
+\subsection*{Reading in the Data File} 
+
+\begin{enumerate}
+  \item  \label{plant1}
+
+ Consider the data file, {\bf plant.dat}. Note that the data file includes headings in Line 1. Read in and print the data.
+
+{\bf REMINDER:} Always be sure to change the path to the data file to the location where you have saved the file!
+
+Let's use an {\em R script} to enter our commands. Open {\bf R}. From the main menu select {\bf File {\boldmath{$\rightarrow$}} New script}. The {\bf R Editor } window will open. (It will say {\em untitled} until you save the script.) 
+
+\begin{itemize} 
+  \item[$\bigstar$] Move the cursor to the {\bf R Editor} window and type in the following:
+ 
+\begin{verbatim}
+ # Statistics 147 Lab #4 Summer 2020
+ # Your name goes here
+ #
+ # R Question 1
+ # Use the read.table command to read in the data
+ # format: read.table(file = "filename including path",header = TRUE)
+ # Be sure to change the path to your data file.
+ plant_data = read.table(file = "[REPLACE/WITH/PATH/TO/YOUR/FILE]/plant.dat",header= TRUE)
+ # Alternatively, you could have changed the current working directory with setwd(...)
+ # and simply used the file name e.g.) read.table(file = "plant.dat",header= TRUE)
+ # Print the data as a check
+ plant_data
+\end{verbatim}
+
+
+Make sure your cursor is in the {\bf R Editor} window. 
+\subitem $\blacktriangle$ To {\bf save} your script,from the main menu, select {\bf File {\boldmath{$\rightarrow$}} Save As}. Select the location where you would like to save your script and type {\bf lab4\_su20\_XX}, where XX = initials of your name.
+\subitem $\blacktriangle$ To execute your script,  from the main menu, select {\bf Edit {\boldmath{$\rightarrow$}} All}.
+
+You should see everything you typed, plus the data, in the {\bf R Console} window.  When you see the data, have Ruihan, Luke or your labmate check it. Then place your initials here. \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ } 
+%\vfill\eject
+
+
+ \item[$\bigstar$]  Use the attach() function to make each column individually accessible. Use the {\bf names()} function to obtain column names. To accomplish these tasks, type the following in the {\bf R Editor} window.
+ 
+\begin{verbatim}
+     # Use attach command to get access to individual columns
+     attach(plant_data)
+     # Use the names() function to obtain column names
+     names(plant_data)
+     # Print the data
+     PlA
+     PlB
+     PlC
+     PlD
+\end{verbatim}
+
+\textcolor{blue}{\bf NOTE:} That is an \textcolor{blue}{\bf "L"} in P\textcolor{blue}{\bf l}A, P\textcolor{blue}{\bf l}B, P\textcolor{blue}{\bf l}C, and P\textcolor{blue}{\bf l}D.  That is {\em NOT} a one (1).
+
+Make sure your cursor is in the {\bf R Editor} window. Save your script and then
+
+\subitem $\blacktriangle$ highlight the new text you just typed.
+\subitem $\blacktriangle$ From the main menu, select {\bf Edit {\boldmath{$\rightarrow$}} Run line or selection}, or hit {\bf Ctrl + R} (Windows) or {\bf Cmnd + Return} (Mac).
+
+You should see everything you just typed, plus the output, in the {\bf R Console} window.  When you see the data, have someone check it.  Then, initial here. \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ } 
+
+\end{itemize}
+
+ 
+
+
+
+
+\item Refer to R Question \ref{plant1}. Generate the mean, median,  variance, and  standard deviation
+for the {\bf Plant A}. 
+
+In the {\bf R Editor} window, type the following:
+
+\begin{verbatim}
+     # R Question 2
+     # Sample Mean: Use mean() function
+     mean_PlA = mean(PlA)
+     # Print the value
+     mean_PlA
+     #
+     # Sample Median: Use median() function
+     median_PlA = median(PlA)
+     # Print the value
+     median_PlA
+     #
+     # Sample Variance: Use var() function 
+     variance_PlA = var(PlA)
+     # Print the value
+     variance_PlA
+     #
+     # Sample Standard Deviation: Use sd() function
+     sd_PlA = sd(PlA)
+     # Print the value
+     sd_PlA
+\end{verbatim}
+
+Make sure your cursor is in the {\bf R Editor} window. Save your script and then
+
+\subitem $\blacktriangle$ highlight the new text you just typed.
+\subitem $\blacktriangle$ From the main menu, select {\bf Edit {\boldmath{$\rightarrow$}} Run line or selection}, or hit {\bf Ctrl + R} (Windows) or {\bf Cmnd + Return} (Mac).
+
+Complete the following from the R Console window.
+
+\begin{verbatim}
+> # Sample Mean: Use mean() function
+> mean_PlA = mean(PlA)
+> # Print the value
+> mean_PlA
+
+[1] _________________
+> # Sample Median: Use median() function
+> median_PlA = median(PlA)
+> # Print the value
+> median_PlA
+
+[1] _________________
+> # Sample Variance: Use var() function 
+> variance_PlA = var(PlA)
+> # Print the value
+> variance_PlA
+
+[1] ___________________
+> # Sample Standard Deviation: Use sd() function
+> sd_PlA = sd(PlA)
+> # Print the value
+> sd_PlA
+
+[1] ____________________
+\end{verbatim}
+
+
+
+
+\item
+Refer to R Question \ref{plant1}. Use the {\bf summary} command to generate the default descriptive statistics in {\bf R} for  {\bf Plant B}.
+
+In the {\bf R Editor} window, type the following:
+
+\begin{verbatim}
+     # R Question 3
+     # Generate default descriptive statistics for Plant B (PlB)
+     summary_PlB = summary(PlB)
+     # Print the results
+     summary_PlB
+\end{verbatim}
+
+Make sure your cursor is in the {\bf R Editor} window. Save your script and then
+
+\subitem $\blacktriangle$ highlight the new text you just typed.
+\subitem $\blacktriangle$ From the main menu, select {\bf Edit {\boldmath{$\rightarrow$}} Run line or selection}.
+
+Complete the following from the R Console window.
+
+\begin{verbatim}
+> # R Question 3
+> # Generate default descriptive statistics for Plant B (PlB)
+> summary_PlB = summary(PlB)
+> # Print the results
+> summary_PlB
+   Min.       1st Qu.      Median      Mean     3rd Qu.    Max.
+
+ _______      _______      _______    _______   _______    _______
+\end{verbatim}
+
+\item (Your Turn)
+Using {\bf R} and your script, complete the following table for the {\bf Plant C} data.
+
+\large
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+ & {\bf Mean} & {\bf Median} & {\bf Variance} & {\bf Standard Deviation} \\
+\hline
+ & & & & \\
+{\bf Plant C} & \hspace*{1.0in} & \hspace*{1.0in} & \hspace*{1.0in} & \hspace*{1.0in} \\
+\hline\end{tabular}\end{center}
+
+
+
+\normalsize
+
+{\bf NOTE:} Before proceeding, be sure to install and load the {\bf TeachingDemos} package. This allows you to use the \texttt{t.test()} function to generate confidence intervals and test of hypotheses for a single mean or the difference of two means and the \texttt{var.test()} function to test equality of variances.
+
+
+
+The general format is
+
+\begin{verbatim}
+t.test(x, y,alternative = "what", mu = diff, var.equal = FALSE,paired = FALSE
+       conf.level = level)
+var.test(x, y, ratio = 1,alternative = "what",conf.level = level)
+\end{verbatim}
+where
+ 
+\begin{center}\begin{tabular}{|l|l|}
+\hline
+what & greater, less, two.sided \\
+\hline
+diff & hypothesized difference between two means \\
+\hline
+var.equal & TRUE or FALSE \\
+ & (May be omitted for non-independent samples) \\
+\hline
+paired & TRUE for non-independent sample, FALSE for independent samples \\
+ & (default is FALSE, so this can be omitted for independent samples) \\
+\hline
+level & confidence level (0.90, 0.95, etc.) \\
+\hline
+\end{tabular}\end{center}
+
+You can always enter \texttt{?t.test} and \texttt{?var.test} in the {\bf R Console} to read more.
+
+\normalsize
+
+\item Practicing confidence intervals and tests of hypothesis.
+\begin{itemize}
+  \item[$\blacklozenge$] Using {\bf R}, find and interpret a {\bf 98\%} confidence interval for the true mean discharge for {\bf Plant A}.
+
+% \vfill\eject
+Add the following lines of code to your script.
+\begin{verbatim}
+     # R Question 4
+     # Generate 98% CI for Plant A
+     # Use t.test
+     # Format: t.test(name_of_variable,alternative = “appropriate option”, 
+     # conf.level = confidence-level-in-decimal-format)
+     t.test(PlA,alternative="two.sided",conf.level= 0.98)
+\end{verbatim}
+
+Make sure your cursor is in the {\bf R Editor} window. Save your script and then
+
+\subitem $\blacktriangle$ highlight the new text you just typed.
+\subitem $\blacktriangle$ From the main menu, select {\bf Edit {\boldmath{$\rightarrow$}} Run line or selection}.
+
+Complete the following from the R Console window.
+
+
+\begin{verbatim}
+> t.test(PlA, alternative = "two.sided", conf.level = 0.98)
+
+        One Sample t-test
+
+data:  PlA
+t = 35.0886, df = 9, p-value = 6.13e-11
+alternative hypothesis: true mean is not equal to 0
+98 percent confidence interval:
+
+ __________________  _________________
+sample estimates:
+mean of x
+
+ __________________   
+\end{verbatim}
+
+{\bf Interpretation:}
+\begin{verbatim}
+
+----------------------------------------------------------------------------
+
+----------------------------------------------------------------------------
+\end{verbatim}
+\item[$\blacklozenge$] (Your turn!) Using {\bf R}, find and interpret a {\bf 96\%} confidence interval for the true mean discharge for {\bf Plant B}. Be sure you write the command you used to obtain your output.
+
+ 
+{\bf Command:}
+\vspace*{0.3in}
+
+{\bf \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }}
+
+{\bf Interval Limits:}
+
+\begin{verbatim}
+96 percent confidence interval:
+
+ __________________  _________________
+\end{verbatim}
+
+%\vfill\eject
+{\bf Interpretation:}
+\begin{verbatim}
+
+----------------------------------------------------------------------------
+
+----------------------------------------------------------------------------
+
+\end{verbatim}
+\vfill\eject
+\item[$\blacklozenge$] Using {\bf R} to complete the calculations, test the hypothesis that the true mean discharge effluent (call it $\mu_A$) for Plant A is significantly
+{\bf less than} 1.50 pounds/gallon.
+
+\vspace*{0.1in}
+Add the following lines of code to your script.
+
+
+\begin{verbatim}
+     # Test mu(PlA) < 1.50
+     # Use t.test
+     # Format: t.test(name_of_variable,alternative = “appropriate option”, 
+     # conf.level = confidence-level-in-decimal-format)
+     t.test(PlA,alternative="less",mu = 1.5, conf.level= 0.95)
+\end{verbatim}
+
+Make sure your cursor is in the {\bf R Editor} window. Save your script and then
+
+\subitem $\blacktriangle$ highlight the new text you just typed.
+\subitem $\blacktriangle$ From the main menu, select {\bf Edit {\boldmath{$\rightarrow$}} Run line or selection}.
+
+Complete the following from the R Console window.
+
+%\vfill\eject
+\begin{verbatim}
+        One Sample t-test
+data:  PlA
+
+t = __________, df = ____, p-value = _________
+alternative hypothesis: true mean is less than 1.5
+\end{verbatim}
+
+\begin{itemize}
+ \item[$\spadesuit$]  $H_0:$ \underline{ \ \ \ $\mu_A = 1.50$ \ \ \ }
+ \item[$\spadesuit$]  $H_a:$ \underline{ \ \ \ $\mu_A <  1.50$ \ \ \ }
+\vspace*{0.1in}
+
+ \item[$\spadesuit$]  The p-value is \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+ \ \ }.
+ \item[$\spadesuit$] RR: Reject $H_0$ if p-value $< \alpha = 0.05$
+
+\item[$\spadesuit$] What is your conclusion? (Be sure to justify your answer!)
+
+
+\baselineskip=18pt
+{\bf Conclusion:} Since the p-value = {\bf \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }} is (less than, greater than) [circle your choice] $\alpha = 0.05$,   (reject, do not reject) [circle your choice] $H_0 \rightarrow$ it (is, is not) [circle your choice] reasonable to assume the  true mean discharge effluent  for Plant A is significantly
+less than 1.50 pounds/gallon.
+
+
+\vspace*{0.1in}
+\end{itemize}
+\baselineskip=10pt
+
+
+\item[$\blacklozenge$] (Your turn!) Using {\bf R} to complete the calculations, test the hypothesis that the true mean discharge effluent (call it $\mu_B$) for Plant B is significantly
+{\bf different from} 1.75 pounds/gallon. Be sure to include the command you used to generate your output.
+
+{\bf Command:}
+\vspace*{0.3in}
+
+{\bf \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }}
+
+\vfill\eject
+{\bf Output from {\bf R}:}
+
+\begin{verbatim}
+        One Sample t-test
+
+data:  PlB
+
+t = _______________, df = ________, p-value = _____________
+alternative hypothesis: true mean is not equal to 1.75
+95 percent confidence interval:
+
+ _______________  ______________
+sample estimates:
+mean of x 
+    
+______________
+\end{verbatim}
+
+\begin{itemize}
+\item[$\spadesuit$] 
+ $H_0:$ \underline{ \ \ \ $\mu_B = 1.75$ \ \ \ }
+\item[$\spadesuit$] $H_a:$ \underline{ \ \ \ $\mu_B \neq  1.75$ \ \ \ }
+
+\vspace*{0.1in}
+
+\item[$\spadesuit$] The p-value is \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+ \ \ }.
+ \item[$\spadesuit$] RR: Reject $H_0$ if p-value $< \alpha = 0.05$
+\item[$\spadesuit$] What is your conclusion? (Be sure to justify your answer!)
+
+
+\baselineskip=24pt
+{\bf Conclusion:} Since the p-value = {\bf \underline{ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }} is (less than, greater than) [circle your choice] $\alpha = 0.05$,  (reject, do not reject) [circle your choice] $H_0 \rightarrow$ it (is, is not) [circle your choice] reasonable to assume the  true mean discharge effluent  for Plant B is significantly
+different from 1.75 pounds/gallon.
+
+
+\vspace*{0.1in}
+\end{itemize}
+\baselineskip=10pt
+\end{itemize}
+
+\end{enumerate}
+
+\normalsize
+{\bf NOTE:} Be sure to save your script! Remember the script is ordinary text, so can be copied into \LaTeX\ , \ Word and/or Notepad.
+
+\large
+{\em\bf You have now successfully completed Lab \#4! Please submit your completed lab worksheet to iLearn. Don't forget to save your R and SAS scripts! Have a good week!!!}
+
+\Large
+\begin{center}
+{\em Luke \& Ruihan}
+\end{center}
+\end{document}
+

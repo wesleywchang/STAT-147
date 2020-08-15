@@ -1,0 +1,66 @@
+/* Set up output and graphics options */
+options ls = 78 nocenter nodate nonumber ps=55 formdlim='*';
+/* Use DM to clear all windows except the editor window */
+DM log "odsresults; clear; out; clear; log; clear;";
+ods graphics off;
+/* Use the title command to generate main titles for your output */
+title1 'Statistics 147, Summer 2020';
+title2 'Wesley Chang';
+title3 'SAS Practice Program 1';
+
+
+title4 'Question 1';
+goptions reset = all colors = (blue,red,green,purple)
+	ftitle = swissb ftext=swissb htitle=3;
+
+data tryloop1;
+	do x = 1 to 9 by 2;
+		y = 0.5 * x * exp(0.5*x);
+		output;
+	end;
+run;
+
+proc print noobs data = tryloop1;
+run;
+quit;
+
+title4 'Question 2';
+symbol1 color=blue
+	interpol=join
+	value=trianglefilled
+	height=2.5;
+
+axis1 value = (f = swissb h = 1.5) label = (h = 1.5 f = swissb);
+axis2 value = (f = swissb h = 1.5) label = (h = 1.75 f = swissb);
+
+proc gplot;
+	title5 c = blue f = swissb 'My First Do Loop Plot';
+	plot y * x / ctext = darkred vaxis = axis2 haxis = axis1;
+
+
+
+title4 'Question 3';
+data tryloop2;
+	do x = 1 to 9 by 4;
+		do y = 1 to 5 by 2;
+			t = y * sqrt(5*x);
+			output;
+		end;
+	end;
+run;
+
+proc print noobs data = tryloop2;
+run;
+
+title4 'Question 4';
+data tryloop3;
+	do n = 1 to 3;
+		do m = 1 to 5 by 2;
+			y = exp((-2 * n )+ 1) * sqrt(3 * m);
+			output;
+		end;
+	end;
+run;
+
+proc print noobs data = tryloop3;
+run;

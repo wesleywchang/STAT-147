@@ -1,0 +1,157 @@
+title1 'Summer 2020';
+title2 'Lab 2 SAS';
+title3 'Descriptive Statistics';
+
+options nocenter ps = 55 nocenter ls = 78 nodate nonumber formdlim='*';
+DM log "odsresults; clear; out; clear; log; clear;";
+ods graphics off;
+
+
+title4 'Question 1';
+
+data age_level;
+	infile '\\apporto.com\dfs\UCR\Users\wchan061_ucr\Desktop\ages.dat' firstobs = 2;
+
+	input Father Mother;
+run;
+
+proc print data = age_level;
+run;
+
+proc gchart data = age_level;
+	title5 'Horizontal Bar Chart for Mother';
+	hbar3d Mother /midpoints = 15 to 35 by 5
+		caxis = orange
+		cfr = verylightpurplishblue
+		coutline = verydarkblue
+		shape = hexagon
+		ctext = red;
+run;
+
+proc gchart data = age_level;
+	title5 'Vertical Bar Chart for Mother';
+	vbar3d Mother / midpoints = 15 to 35 by 5
+		caxis = green
+		cfr = verylightpurple
+		coutline = verydarkblue
+		shape = prism
+		ctext = green;
+	pattern color = purple;
+run;
+
+
+title4 'Question 2';
+symbol1 value = +
+	height = 3
+	cv = blue;
+
+proc gplot data = age_level;
+	title5 'Plot of Mother vs Father';
+
+	plot Father * Mother /
+		caxis = darkgreen
+		ctext = darkred;
+run;
+
+
+title4 'Question 3 Subpart i';
+proc univariate data = age_level;
+	title5 'Descriptive Statistics for Father';
+	var Father;
+run;
+
+title4 'Question 3 Subpart ii';
+proc means mean median stddev data = age_level;
+	title5 'Descriptive Statistics for Mother';
+	var Mother;
+run;
+
+
+title3 'Probability Distributions';
+title4 'Question 1';
+
+data norm1;
+	input mu sigma x1 x2;
+	p1 = cdf('Normal',x2,mu,sigma) - cdf('Normal',x1,mu,sigma);
+datalines;
+60 6 48 62
+;
+
+proc print noobs data = norm1;
+	title5 'Part i';
+run;
+
+
+title5 'Part ii';
+data part_ii;
+	input mu sigma x3;
+	p2 = sdf('Normal',x3,mu,sigma);
+datalines;
+60 6 63
+;
+run;
+
+proc print noobs data = part_ii;
+	var mu sigma x3 p2;
+run;
+
+
+title5 'Part iii';
+data part_iii;
+	input mu sigma prob1;
+	x4 = quantile('Normal',prob1,mu,sigma);
+datalines;
+60 6 0.96
+;
+run;
+
+proc print noobs data = part_iii;
+run;
+
+
+title4 'Question 2';
+
+data binom1;
+	input p n x1 x2 x3 x4 x5 x6;
+
+	p1 = pdf('Binom',x1,p,n);
+
+	p2 = cdf('Binom',x2,p,n);
+
+	p3 = 1 - cdf('Binom',x3,p,n);
+
+	p3a = sdf('Binom',x3,p,n);
+
+	p4 = 1 - cdf('Binom',x4,p,n);
+
+	p5 = cdf('Binom',x5,p,n) - cdf('Binom',x6,p,n);
+datalines;
+0.45 20 9 11 10 8 12 7
+;
+run;
+
+proc print noobs data = binom1;
+	title5 'Part i';
+	var p1;
+run;
+
+proc print noobs data = binom1;
+	title5 'Part ii';
+	var p2;
+run;
+
+proc print noobs data = binom1;
+	title5 'Part iii';
+	var p3 p3a;
+run;
+
+proc print noobs data = binom1;
+	title5 'Part iv';
+	var p4;
+run;
+
+proc print noobs data = binom1;
+	title5 'Part v';
+	var p5;
+run;
+
